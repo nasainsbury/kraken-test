@@ -13,9 +13,13 @@ export class Kraken implements EnergyAPI {
 
     if (request.status === 200) {
       const data = await request.json();
-      const parsed = OutagesSchema.parse(data);
+      const parsed = OutagesSchema.safeParse(data);
 
-      return parsed;
+      if (parsed.success) {
+        return parsed.data;
+      } else {
+        throw new Error("Invalid data returned");
+      }
     }
 
     switch (request.status) {
@@ -40,9 +44,13 @@ export class Kraken implements EnergyAPI {
 
     if (request.status === 200) {
       const data = await request.json();
-      const parsed = SiteSchema.parse(data);
+      const parsed = SiteSchema.safeParse(data);
 
-      return parsed;
+      if (parsed.success) {
+        return parsed.data;
+      } else {
+        throw new Error("Invalid data returned");
+      }
     }
 
     switch (request.status) {
@@ -58,7 +66,6 @@ export class Kraken implements EnergyAPI {
   }
 
   public async createOutage(siteId: string, outages: PostOutage[]) {
-    console.info(siteId);
     const request = await fetchWithRetry(
       `${this.baseUrl}/site-outages/${siteId}`,
       {
